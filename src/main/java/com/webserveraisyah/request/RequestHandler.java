@@ -1,24 +1,24 @@
 package com.webserveraisyah.request;
 
-import java.io.*; // Mengimpor kelas-kelas yang terkait dengan operasi masukan/keluaran
-import java.net.HttpURLConnection; // Mengimpor kelas HttpURLConnection untuk koneksi HTTP
-import java.net.InetAddress; // Mengimpor kelas InetAddress untuk representasi alamat IP
-import java.text.SimpleDateFormat; // Mengimpor kelas SimpleDateFormat untuk pemformatan tanggal
-import java.util.Date; // Mengimpor kelas Date untuk representasi tanggal dan waktu
-import java.util.Properties; // Mengimpor kelas Properties untuk bekerja dengan file konfigurasi
-import java.io.File; // Mengimpor kelas File untuk bekerja dengan file
-import java.io.FileInputStream; // Mengimpor kelas FileInputStream untuk membaca file
-import java.io.IOException; // Mengimpor kelas IOException untuk penanganan kesalahan masukan/keluaran
-import java.io.OutputStream; // Mengimpor kelas OutputStream untuk menulis data keluar
-import java.nio.file.Files; // Mengimpor kelas Files untuk operasi file
-import java.nio.file.Path; // Mengimpor kelas Path untuk merepresentasikan lokasi file
-import java.nio.file.Paths; // Mengimpor kelas Paths untuk membuat objek Path
+import java.io.*; // kelas-kelas yang terkait dengan operasi input/output
+import java.net.HttpURLConnection; // untuk koneksi HTTP
+import java.net.InetAddress; // ntuk representasi alamat IP
+import java.text.SimpleDateFormat; // SimpleDateFormat untuk pemformatan tanggal
+import java.util.Date; // untuk representasi tanggal dan waktu
+import java.util.Properties; // untuk bekerja dengan file konfigurasi
+import java.io.File; //untuk bekerja dengan file
+import java.io.FileInputStream; // FileInputStream untuk membaca file
+import java.io.IOException; // IOException untuk penanganan kesalahan input/output
+import java.io.OutputStream; // OutputStream untuk menulis data keluar
+import java.nio.file.Files; // untuk operasi file
+import java.nio.file.Path; // untuk merepresentasikan lokasi file
+import java.nio.file.Paths; // ntuk membuat objek Path
 
-import javafx.application.Platform; // Mengimpor kelas Platform dari JavaFX untuk menjalankan tugas di utas JavaFX
+import javafx.application.Platform; //ntuk menjalankan tugas di utas JavaFX
 import javafx.scene.control.TextArea; // Mengimpor kelas TextArea dari JavaFX untuk menampilkan teks
 
-import com.sun.net.httpserver.HttpExchange; // Mengimpor kelas HttpExchange untuk mewakili pertukaran HTTP
-import com.sun.net.httpserver.HttpHandler; // Mengimpor kelas HttpHandler untuk menangani permintaan HTTP
+import com.sun.net.httpserver.HttpExchange; // HttpExchange untuk mewakili pertukaran HTTP
+import com.sun.net.httpserver.HttpHandler; // HttpHandler untuk menangani permintaan HTTP
 
 
 // Deklarasi kelas RequestHandler yang mengimplementasikan HttpHandler
@@ -39,8 +39,9 @@ public class RequestHandler implements HttpHandler {
     @Override
     // Implementasi metode handle dari antarmuka HttpHandler
     public void handle(HttpExchange exchange) throws IOException {
-        String requestPath = exchange.getRequestURI().getPath(); // Mendapatkan jalur permintaan dari URL permintaan
+        String requestPath = exchange.getRequestURI().getPath(); // Mendapatkan jalur permintaan dari URI permintaan
 
+        // inetAddress => kelas dari paket java.net yang digunakan untuk mewakili alamat IP baik IPv4 maupun IPv6
         InetAddress clientAddress = exchange.getRemoteAddress().getAddress(); // Mendapatkan alamat IP klien
         String clientIpAddress = clientAddress.getHostAddress(); // Mendapatkan alamat IP klien
 
@@ -65,17 +66,30 @@ public class RequestHandler implements HttpHandler {
     }
 
     // Metode untuk menangani permintaan folder
+    // Metode untuk menangani permintaan folder
     private void handleFolderRequest(HttpExchange exchange, Path folderPath) throws IOException {
         File[] files = folderPath.toFile().listFiles(); // Mendapatkan daftar file dalam folder
         StringBuilder response = new StringBuilder(); // Membuat StringBuilder untuk membangun respon
-        response.append("<html><body><h1>Index of ").append(folderPath.toString()).append("</h1><ul>"); // Memulai respon HTML
-        for (File file : files) { // Loop melalui setiap file dalam folder
-            String link = file.isDirectory() ? file.getName() + "/" : file.getName(); // Mendapatkan link untuk setiap file
-            response.append("<li><a href=\"").append(link).append("\">").append(file.getName()).append("</a></li>"); // Menambahkan tautan ke respon
+        response.append("<html><body><h1>Index of ").append(folderPath.toString()).append("</h1>"); // Memulai respon HTML
+        response.append("<table border=\"1\">"); // Membuat tabel dengan border
+        response.append("<tr><th>Name</th><th>Type</th><th>Size (Bytes)</th></tr>"); // Menambahkan header tabel
+
+        if (files != null) {
+            for (File file : files) { // Loop melalui setiap file dalam folder
+                String link = file.isDirectory() ? file.getName() + "/" : file.getName(); // Mendapatkan link untuk setiap file
+                response.append("<tr>"); // Memulai baris baru
+                response.append("<td><a href=\"").append(link).append("\">").append(file.getName()).append("</a></td>"); // Menambahkan kolom nama dengan tautan
+                response.append("<td>").append(file.isDirectory() ? "Directory" : "File").append("</td>"); // Menambahkan kolom tipe
+                response.append("<td>").append(file.isDirectory() ? "-" : file.length()).append("</td>"); // Menambahkan kolom ukuran
+                response.append("</tr>"); // Menutup baris
+            }
         }
-        response.append("</ul></body></html>"); // Menutup respon HTML
+
+        response.append("</table>"); // Menutup tabel
+        response.append("</body></html>"); // Menutup respon HTML
         sendResponse(exchange, HttpURLConnection.HTTP_OK, response.toString()); // Mengirim respon ke klien
     }
+
 
     // Metode untuk menangani permintaan file
     private void handleFileRequest(HttpExchange exchange, Path filePath) throws IOException {
@@ -130,6 +144,7 @@ public class RequestHandler implements HttpHandler {
     // Metode untuk mencatat log
     private void log(String message) {
         // Metode ini bisa diimplementasikan untuk mencatat pesan log jika diperlukan
+        // diisi komentar karena method nya direncakan di masa depan
     }
 
 
